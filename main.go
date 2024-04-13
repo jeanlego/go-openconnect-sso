@@ -11,9 +11,8 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-
-	"github.com/mxschmitt/playwright-go"
-	"github.com/rustycl0ck/go-openconnect-sso/config"
+	"github.com/playwright-community/playwright-go"
+	"github.com/jeanlego/go-openconnect-sso/config"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -47,6 +46,7 @@ func main() {
 
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 
+	playwright.Install()
 	pw, err := playwright.Run()
 	if err != nil {
 		level.Error(logger).Log("msg", "could not launch playwright", "err", err)
@@ -71,7 +71,7 @@ func main() {
 	level.Info(logger).Log("msg", "waiting to detect successful authentication token cookie on the browser")
 	page.Goto(initResp.LoginURL)
 
-	var tokenCookie playwright.NetworkCookie
+	var tokenCookie playwright.Cookie
 
 	for {
 		foundCookie := false
@@ -82,7 +82,7 @@ func main() {
 
 		for _, cookie := range cookies {
 			if cookie.Name == initResp.TokenCookieName {
-				tokenCookie = *cookie
+				tokenCookie = cookie
 				level.Info(logger).Log("msg", "received successful authentication token cookie from browser")
 				foundCookie = true
 				break
